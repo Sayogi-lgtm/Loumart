@@ -6,6 +6,7 @@ desktop.ini
 # Pengaturan editor lokal
 .vscode/
 .idea/
+.opencode/
 
 # Berkas sementara dan log
 *.log
