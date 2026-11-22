@@ -1,0 +1,12 @@
+# Berkas sistem operasi
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Pengaturan editor lokal
+.vscode/
+.idea/
+
+# Berkas sementara dan log
+*.log
+*.tmp
