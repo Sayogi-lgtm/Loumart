@@ -8,6 +8,9 @@ desktop.ini
 .idea/
 .opencode/
 
+# Kredensial database lokal
+/config/database.local.php
+
 # Berkas sementara dan log
 *.log
 *.tmp

@@ -1,7 +1,7 @@
 # AGENTS.md: Panduan untuk GitHub Copilot (LouMart)
 
-Kamu membantu membangun **LouMart**, aplikasi web toko online sederhana (PHP native, pola MVC,
-data disimpan di file JSON). Ini tugas kuliah dikerjakan 6 orang, jadi kode harus sederhana dan
+Kamu membantu membangun **LouMart**, aplikasi web sistem pemesanan dan manajemen penjualan
+(PHP native, pola MVC, data disimpan di MariaDB). Ini tugas kuliah dikerjakan 6 orang, jadi kode harus sederhana dan
 mudah dibaca pemula. Balas dan beri komentar kode dalam Bahasa Indonesia.
 
 ## Baca dulu, sesuai urutan
@@ -18,22 +18,23 @@ Jika dua dokumen bertentangan: untuk hal teknis, `architecture.md` menang; untuk
 
 ## Cara kerja
 
-- Kerjakan **satu task (T-XX) per sesi**. Jangan mengerjakan task lain.
+- Kerjakan **satu task per sesi** (ID `T-XX`, `A-XX`, atau `U-XX`). Jangan mengerjakan task lain.
+- Untuk task fase A/U, ikuti aturan khusus di `docs/task.md`: tulis hasil pada file baru yang tercantum di task dan ajukan perubahan dokumen acuan untuk persetujuan PM sebelum menerapkannya.
 - Sebelum menulis kode, tulis rencana singkat: file apa yang dibuat/diubah dan alasannya. Tunggu persetujuan jika lebih dari 3 file.
 - Sentuh hanya file yang tercantum pada task. Jika perlu file lain, jelaskan alasannya dulu.
-- Setelah selesai: jalankan cara verifikasi pada task (mis. `php tests/run.php`), lalu ringkas perubahan dan centang task di `docs/task.md`.
+- Setelah kriteria task terpenuhi, jalankan cara verifikasi pada task (mis. `php tests/run.php`), lalu ringkas perubahan dan centang task di `docs/task.md`. Mencentang task A/U bukan persetujuan untuk menerapkan perubahan pada dokumen acuan.
 - Jelaskan keputusan teknis dengan bahasa sederhana; penggunanya masih belajar backend.
 
 ## Batasan keras
 
-- Dilarang menambah framework, Composer, database SQL, library PHP/JS baru tanpa persetujuan.
+- Dilarang menambah framework, Composer, atau library PHP/JS baru tanpa persetujuan. Database MariaDB dan Tailwind CSS melalui CDN sudah disetujui untuk proyek.
 - Target **PHP 8.3.3**. Setiap file PHP diawali `declare(strict_types=1);` dan memakai tipe pada parameter, return, dan properti (lihat `docs/rules.md` bagian 10).
-- Tampilan: HTML + **Bootstrap 5.3.3** + CSS kustom di file eksternal `public/assets/css/style.css`. Dilarang atribut `style=` inline dan tag `<style>` di View (lihat `docs/rules.md` bagian 11).
+- Tampilan: HTML + **Tailwind CSS melalui CDN**; gaya kustom tambahan ditulis di file eksternal `public/assets/css/style.css`. Dilarang atribut `style=` inline dan tag `<style>` di View (lihat `docs/rules.md` bagian 11).
 - Komunikasi data memakai AJAX (`fetch`) dengan format JSON, sesuai ketentuan tugas.
-- Dilarang mengubah format JSON di `data/`, kontrak API, atau rumus perhitungan tanpa persetujuan.
+- JSON digunakan sebagai format komunikasi API, bukan penyimpanan data aplikasi. Perubahan kontrak API atau rumus perhitungan tetap memerlukan persetujuan.
 - Uang selalu bilangan bulat (`int`), tidak pernah `float`.
-- Rumus dan validasi hanya di `app/Services/`. Akses JSON hanya lewat `JsonStore` dari Model.
-- Jangan menimpa `data/produk.json` dan `data/pesanan.json` kecuali diminta. Tes memakai data sementara.
+- Rumus dan validasi hanya di `app/Services/`. Akses MariaDB dilakukan melalui Model dengan cara aman sesuai `docs/rules.md`.
+- Setiap anggota memakai MariaDB lokal. Struktur tabel dan data awal harus disamakan; jangan mengunggah kredensial database ke GitHub.
 - Jangan menaruh apa pun selain aset publik di `public/`.
 
 ## Area kerja per peran
@@ -54,6 +55,8 @@ Task di `docs/task.md` sudah mencantumkan perannya. Jangan keluar dari area pera
 php -S localhost:8000 -t public     # menjalankan aplikasi
 php tests/run.php                   # menjalankan uji
 ```
+
+Tailwind CSS dimuat melalui CDN sehingga koneksi internet diperlukan saat membuka aplikasi.
 
 ## Format jawaban saat menyelesaikan task
 

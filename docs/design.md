@@ -10,11 +10,10 @@ dan samakan gayanya dengan layar yang sudah ada.
 - Bahasa Indonesia, nada ramah dan singkat.
 - Checkout maksimal **4 langkah**: Katalog, Keranjang, Checkout, Ringkasan/Status (NFR-02).
   Langkah ini ditampilkan sebagai stepper di header halaman.
-- Responsif untuk HP dan laptop (NFR-01) memakai Bootstrap 5.3.3 untuk grid dan komponen,
-  dengan CSS kustom eksternal di `public/assets/css/style.css`. Rancang untuk layar HP dulu.
+- Responsif untuk HP dan laptop (NFR-01) memakai Tailwind CSS melalui CDN. Rancang untuk layar HP dulu.
 - Pesan kesalahan memakai teks dari tabel validasi di `prd.md` bagian 7.4.
-- Semua gaya ada di file eksternal `public/assets/css/style.css` (tanpa CSS inline).
-  Warna, font, dan sudut diatur lewat variabel CSS di `:root` agar mudah diganti satu tempat.
+- Utility class Tailwind ditulis pada atribut `class`. Token warna, font, dan sudut tetap didefinisikan
+  sebagai variabel CSS di `public/assets/css/style.css`; jangan memakai atribut `style=` atau tag `<style>`.
 
 ## 2. Gaya visual
 
@@ -95,10 +94,26 @@ Tombol, chip kategori, kolom cari, badge status, dan stepper qty berbentuk pil
   --radius-xl: 24px;
   --font-heading: "Plus Jakarta Sans", system-ui, sans-serif;
   --font-body: "DM Sans", system-ui, sans-serif;
+
 }
 ```
 
-### 2.6 Responsif `[SEMENTARA]`
+### 2.6 Penerapan token dengan Tailwind
+
+Token tetap menjadi sumber nilai visual. Gunakan arbitrary value Tailwind untuk merujuk variabel CSS, misalnya:
+
+| Kebutuhan | Contoh utility class |
+|---|---|
+| Latar halaman | `bg-[var(--surface-page)]` |
+| Warna utama | `bg-[var(--brand-primary)]` |
+| Teks utama | `text-[var(--content-primary)]` |
+| Garis komponen | `border-[var(--border-default)]` |
+| Radius kartu | `rounded-[var(--radius-lg)]` |
+| Grid responsif | `grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4` |
+
+Tailwind dimuat melalui CDN pada layout utama. Karena itu, halaman membutuhkan koneksi internet saat dibuka.
+
+### 2.7 Responsif
 
 Versi HP belum didesain di Wonder. Nilai awal agar pengerjaan tidak tertahan:
 
@@ -260,9 +275,10 @@ Admin: tombol "Lihat toko" -> Katalog
 
 ## 8. Yang diserahkan UI/UX Designer
 
-Sudah ada di Wonder: 6 layar laptop (Katalog, Keranjang, Checkout, Status Pesanan, Admin
-Dashboard, Admin Produk), token warna/font/sudut, dan alur navigasi. Dashboard Admin merupakan
-desain opsional dan belum termasuk route atau task implementasi saat ini.
+Enam layar laptop yang menjadi cakupan wajib adalah Katalog, Keranjang, Checkout, Status Pesanan,
+Admin Produk, dan Admin Transaksi (sesuai U-02 dan U-03). Dashboard Admin pada bagian 5.5 adalah
+desain opsional dan tidak termasuk enam layar tersebut maupun route atau task implementasi saat ini.
+Token warna/font/sudut dan alur navigasi juga sudah ditetapkan.
 
 Belum ada: halaman Admin Transaksi, modal produk dan dialog konfirmasi, keadaan kosong/loading/error,
 toast, versi HP, dan pintu masuk "cek pesanan lewat ID". Setelah ini dibuat, perbarui bagian 4 dan 5

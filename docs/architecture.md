@@ -9,30 +9,31 @@ Untuk hal teknis (struktur, API, format data), dokumen ini adalah acuan utama.
 |---|---|---|
 | Bahasa backend | PHP **8.3.3** native, tanpa framework dan tanpa Composer | Final (keputusan tim) |
 | Pola | MVC + lapisan Service (logika bisnis) | Final |
-| Penyimpanan | File JSON di folder `data/` | Final (PRD) |
-| Frontend | HTML (View PHP) + Bootstrap 5.3.3 + CSS kustom eksternal; JavaScript murni; komunikasi AJAX (`fetch`) berformat JSON | Final (ketentuan tugas) |
+| Penyimpanan | MariaDB lokal pada komputer setiap anggota; skema dan data awal disamakan melalui berkas SQL | Final (keputusan dosen/tim) |
+| Akses database | PDO bawaan PHP; query berparameter; kredensial berada pada konfigurasi lokal yang tidak diunggah ke GitHub | Final |
+| Frontend | HTML (View PHP) + Tailwind CSS melalui CDN; JavaScript murni; komunikasi AJAX (`fetch`) berformat JSON | Final (keputusan tim) |
 | Keranjang | Disimpan di `localStorage` browser, divalidasi ulang server saat checkout | Usulan |
 | Login admin | Tidak ada (halaman admin dibuka langsung) | Terbuka, konfirmasi dosen |
 | Pembulatan | Dibulatkan ke rupiah terdekat (setengah ke atas), hitung pakai bilangan bulat | Usulan, perlu disepakati |
-| Gaya nama field JSON | `camelCase` | Final |
+| Gaya nama field API JSON | `camelCase` | Final |
 
 ## 2. Gambaran Komponen
 
 ```mermaid
 flowchart LR
-    B[Browser<br/>HTML + Bootstrap + JS] -->|1. buka halaman| P[Page Controller<br/>mengirim View]
+    B[Browser<br/>HTML + Tailwind CDN + JS] -->|1. buka halaman| P[Page Controller<br/>mengirim View]
     B -->|2. fetch /api/...| A[API Controller<br/>menerima JSON]
     A --> S[Service<br/>hitung dan validasi]
     S --> M[Model<br/>Produk dan Pesanan]
-    M --> J[(JsonStore<br/>data/*.json)]
-    P --> V[View<br/>file PHP + Bootstrap]
+    M --> J[(MariaDB lokal)]
+    P --> V[View<br/>file PHP + Tailwind]
 ```
 
 Cara membacanya (untuk pemula):
 
 - **Browser** meminta halaman (misalnya katalog). Server mengirim kerangka HTML dari **View**.
 - Setelah halaman tampil, JavaScript memanggil **API** (misalnya `GET /api/produk`) untuk mengambil data.
-- **Controller** hanya menerima permintaan dan mengirim jawaban. Aturan hitung dan validasi ada di **Service**. Baca dan tulis file JSON dilakukan **Model** lewat **JsonStore**.
+- **Controller** hanya menerima permintaan dan mengirim jawaban. Aturan hitung dan validasi ada di **Service**. Baca dan tulis data MariaDB dilakukan oleh **Model** melalui PDO.
 
 ## 3. Alur Checkout (Sequence)
 
@@ -50,7 +51,7 @@ sequenceDiagram
     V-->>S: daftar error (kosong jika lolos)
     S->>H: hitung(items dengan harga dari server)
     H-->>S: subtotal, diskon, pajak, total
-    S->>M: simpan pesanan + kurangi stok (dalam satu kunci file)
+    S->>M: simpan pesanan + kurangi stok (dalam satu transaksi database)
     M-->>S: pesanan tersimpan
     S-->>C: pesanan
     C-->>U: 201 {sukses:true, data:pesanan}
@@ -61,17 +62,17 @@ sequenceDiagram
 ```text
 loumart/
 ├── AGENTS.md
-├── docs/                       prd.md, architecture.md, design.md, techstack.md, rules.md, plan.md, task.md
+├── docs/                       prd.md, architecture.md, design.md, techstack.md, rules.md, plan.md, task.md, keputusan.md
 ├── public/                     SATU-SATUNYA folder yang boleh diakses browser
 │   ├── index.php               front controller (semua request masuk lewat sini)
 │   ├── .htaccess               rewrite ke index.php (untuk Apache/XAMPP)
 │   └── assets/
-│       ├── css/                style.css (CSS kustom eksternal; Bootstrap dari CDN)
+│       ├── css/                style.css (CSS tambahan eksternal; Tailwind dari CDN)
 │       ├── js/                 api.js, format.js, cart.js, katalog.js, keranjang.js,
 │       │                       checkout.js, status-pesanan.js, admin-produk.js, admin-transaksi.js
 │       └── img/                gambar produk
 ├── app/
-│   ├── Core/                   Router.php, Request.php, Response.php, View.php, JsonStore.php
+│   ├── Core/                   Router.php, Request.php, Response.php, View.php, Database.php
 │   ├── Controllers/            PageController.php, ProdukApiController.php,
 │   │                           PesananApiController.php, RingkasanApiController.php
 │   ├── Models/                 Produk.php, Pesanan.php
@@ -81,11 +82,13 @@ loumart/
 │       ├── katalog.php, keranjang.php, checkout.php, status-pesanan.php
 │       └── admin/produk.php, admin/transaksi.php
 ├── config/
-│   ├── app.php                 pajak, tabel diskon, pola kontak, lokasi data
+│   ├── app.php                 pajak, tabel diskon, pola kontak
+│   ├── database.example.php    contoh konfigurasi koneksi
+│   ├── database.local.php      konfigurasi lokal (tidak diunggah ke GitHub)
 │   └── routes.php              daftar route halaman dan API
-├── data/                       produk.json, pesanan.json (di luar public)
+├── database/                   schema.sql dan seed.sql untuk setup lokal
 └── tests/
-    └── run.php                 uji otomatis sederhana (skenario uji PRD bagian 17)
+    └── run.php                 uji otomatis sederhana (gunakan database pengujian)
 ```
 
 Kepemilikan folder (supaya tidak bentrok di Git):
@@ -94,17 +97,17 @@ Kepemilikan folder (supaya tidak bentrok di Git):
 |---|---|
 | Frontend 1 | `app/Views/`, `public/assets/css/` |
 | Frontend 2 | `public/assets/js/` |
-| Backend/Logic | `app/Core/`, `app/Controllers/`, `app/Models/`, `app/Services/`, `config/`, `data/`, `tests/` |
+| Backend/Logic | `app/Core/`, `app/Controllers/`, `app/Models/`, `app/Services/`, `config/`, `database/`, `tests/` |
 | UI/UX | `docs/design.md`, `public/assets/img/` |
-| PM | `docs/plan.md`, `docs/task.md`, `README.md` |
+| PM | `docs/plan.md`, `docs/task.md`, `docs/keputusan.md`, `README.md` |
 
 ## 5. Tanggung Jawab Tiap Lapisan
 
 | Lapisan | Boleh | Tidak boleh |
 |---|---|---|
-| Controller | Baca request, panggil Service/Model, kirim Response | Berisi rumus, aturan validasi, atau akses file JSON langsung |
+| Controller | Baca request, panggil Service/Model, kirim Response | Berisi rumus, aturan validasi, atau query database langsung |
 | Service | Rumus hitung, aturan validasi, alur transaksi | Menulis HTML, membaca `$_POST`/`$_GET` langsung |
-| Model | Baca/tulis data lewat `JsonStore` | Berisi aturan bisnis |
+| Model | Baca/tulis data MariaDB melalui PDO dan query berparameter | Berisi aturan bisnis atau query yang merangkai input langsung ke SQL |
 | View | HTML + sedikit PHP untuk menampilkan (`htmlspecialchars`) | Query data, rumus, atau menulis file |
 | JS (frontend) | Menampilkan, kirim request, simpan keranjang | Menghitung total final (angka resmi dari server) |
 
@@ -191,8 +194,7 @@ Kode HTTP:
 }
 ```
 
-Klien **tidak mengirim harga**. Server mengambil harga dari `produk.json`.
-Untuk `/hitung`, `pemesan`, `kontak`, dan `alamat` boleh kosong (hanya `items` yang dihitung).
+Klien **tidak mengirim harga**. Server mengambil harga produk dari MariaDB. Untuk `/hitung`, `pemesan`, `kontak`, dan `alamat` boleh kosong (hanya `items` yang dihitung).
 
 Response `POST /api/pesanan` (201):
 
@@ -246,26 +248,19 @@ Aturan produk: `nama` wajib, `harga` bilangan bulat >= 0, `stok` bilangan bulat 
 
 ## 8. Model Data dan Penyimpanan
 
-`data/produk.json` (array):
+Data utama aplikasi disimpan di MariaDB. Database lokal setiap anggota harus menggunakan struktur tabel dan data awal yang sama, disiapkan dari berkas SQL proyek:
 
-```json
-[
-  { "id": 1, "nama": "Kaos Polos", "kategori": "Pakaian", "harga": 75000, "stok": 20, "gambar": "kaos.jpg" }
-]
-```
+- `produk`: katalog, harga, stok, kategori, dan nama gambar.
+- `pesanan`: data pemesan, rincian perhitungan, status, dan tanggal.
+- `detail_pesanan`: item pesanan, jumlah, serta harga satuan saat transaksi.
 
-`data/pesanan.json` (array): bentuknya sama dengan response pada 7.3. Detail pesanan disimpan di dalam `items`.
+Relasi antar tabel mengikuti ERD pada PRD bagian 11. Setiap anggota membuat database lokal masing-masing dan menjalankan berkas skema serta data awal. Kredensial koneksi disimpan dalam konfigurasi lokal yang dikecualikan dari Git; berkas contoh tanpa kata sandi pribadi boleh dibagikan.
 
-Aturan penyimpanan (`JsonStore`):
+Model mengakses MariaDB melalui PDO. Semua nilai dari pengguna dikirim sebagai parameter query, bukan ditempel langsung ke SQL. Operasi checkout dan pembatalan yang mengubah beberapa baris harus memakai transaksi database: jika salah satu langkah gagal, seluruh transaksi dibatalkan.
 
-- File JSON ada di `data/`, **di luar** `public/`, supaya tidak bisa dibuka lewat browser.
-- Tulis file dengan cara aman: kunci file (`flock`), tulis ke file sementara, lalu `rename`.
-- Operasi yang mengubah lebih dari satu file (buat pesanan = simpan pesanan + kurangi stok;
-  batalkan pesanan = ubah status + kembalikan stok) harus dilakukan dalam **satu kunci**
-  supaya data tidak setengah tersimpan.
-- Jika file belum ada atau kosong, anggap array kosong `[]`.
-- ID produk: angka berurutan (`max(id) + 1`). ID pesanan: `ORD-` + nomor 3 digit
-  (`ORD-001`, `ORD-002`, ... lanjut `ORD-1000` jika lebih dari 999).
+Nama tabel/kolom database mengikuti skema SQL yang disepakati. Nama field JSON untuk API tetap `camelCase`; format API tidak menentukan cara penyimpanan internal.
+
+Untuk pengujian, gunakan database pengujian atau data khusus yang terpisah dari database kerja anggota.
 
 ## 9. Logika Bisnis
 
@@ -330,7 +325,7 @@ Menunggu Pembayaran --> Dibatalkan    (final, stok dikembalikan)
 Perubahan selain dari "Menunggu Pembayaran" ditolak dengan 409.
 Saat dibatalkan, tambahkan `qty` tiap item kembali ke stok produk. Jika produknya sudah dihapus, lewati item itu.
 
-## 10. Perubahan dari PRD (perlu disetujui tim)
+## 10. Perubahan dari PRD dan keputusan tim
 
 | No | Perubahan | Alasan |
 |---|---|---|
@@ -341,8 +336,12 @@ Saat dibatalkan, tambahkan `qty` tiap item kembali ke stok produk. Jika produkny
 | 5 | Tambah VAL-07 (alamat wajib) | FR-07 meminta alamat, tapi PRD belum punya aturan validasinya |
 | 6 | Aturan pembulatan setengah ke atas | NFR-03 minta bilangan bulat tanpa selisih, tapi PRD belum menyebut cara membulatkan |
 | 7 | Seluruh JSON memakai `camelCase` (`produkId`, `hargaSatuan`) | ERD memakai `pesanan_id`/`produk_id`, contoh JSON memakai `produkId`; dikunci satu gaya |
+| 8 | Penyimpanan aplikasi memakai MariaDB lokal tiap anggota | Ketentuan dosen meminta database; tim memilih MariaDB dan menyamakan skema/data awal melalui berkas SQL |
+| 9 | Tampilan memakai Tailwind CSS melalui CDN, bukan Bootstrap | Ketentuan dosen mengizinkan library CSS eksternal; tim memilih Tailwind CDN |
 
 ## 11. Yang Masih Perlu Dikonfirmasi
+
+MariaDB lokal dan Tailwind CDN sudah diputuskan; implementasinya masih menunggu task T-34 sampai T-36.
 
 1. Pastikan semua laptop anggota dan tempat demo memakai PHP 8.3.3 (cek dengan `php -v`).
 2. Aturan diskon dan pajak: dari dosen atau keputusan kelompok.

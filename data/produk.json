@@ -1,0 +1,66 @@
+[
+    {
+        "id": 1,
+        "nama": "Kaos Polos",
+        "kategori": "Pakaian",
+        "harga": 75000,
+        "stok": 20,
+        "gambar": "kaos-polos.jpg"
+    },
+    {
+        "id": 2,
+        "nama": "Kemeja Flanel",
+        "kategori": "Pakaian",
+        "harga": 185000,
+        "stok": 12,
+        "gambar": "kemeja-flanel.jpg"
+    },
+    {
+        "id": 3,
+        "nama": "Celana Jeans",
+        "kategori": "Pakaian",
+        "harga": 275000,
+        "stok": 8,
+        "gambar": "celana-jeans.jpg"
+    },
+    {
+        "id": 4,
+        "nama": "Tas Ransel",
+        "kategori": "Aksesori",
+        "harga": 320000,
+        "stok": 7,
+        "gambar": "tas-ransel.jpg"
+    },
+    {
+        "id": 5,
+        "nama": "Topi Kasual",
+        "kategori": "Aksesori",
+        "harga": 65000,
+        "stok": 15,
+        "gambar": "topi-kasual.jpg"
+    },
+    {
+        "id": 6,
+        "nama": "Sepatu Sneakers",
+        "kategori": "Alas Kaki",
+        "harga": 450000,
+        "stok": 5,
+        "gambar": "sepatu-sneakers.jpg"
+    },
+    {
+        "id": 7,
+        "nama": "Botol Minum",
+        "kategori": "Perlengkapan",
+        "harga": 45000,
+        "stok": 0,
+        "gambar": "botol-minum.jpg"
+    },
+    {
+        "id": 8,
+        "nama": "Jaket Hoodie",
+        "kategori": "Pakaian",
+        "harga": 350000,
+        "stok": 6,
+        "gambar": "jaket-hoodie.jpg"
+    }
+]
