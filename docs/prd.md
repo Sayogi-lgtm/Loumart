@@ -4,9 +4,9 @@ Disusun oleh: System Analyst \| Status: Draft 1.0 \| Tanggal: 18 November 2026
 
 ## 1. Ringkasan Produk
 
-**LouMart** adalah aplikasi web toko online sederhana untuk mengelola katalog produk, keranjang belanja, transaksi pemesanan, dan status pembayaran. Aplikasi dipakai oleh dua jenis pengguna: **Pembeli** yang berbelanja, dan **Admin** yang mengelola produk serta memantau penjualan.
+**LouMart** adalah aplikasi web sistem pemesanan dan manajemen penjualan untuk mengelola katalog produk, keranjang belanja, transaksi pemesanan, dan status pembayaran. Aplikasi dipakai oleh dua jenis pengguna: **Pembeli** yang berbelanja, dan **Admin** yang mengelola produk serta memantau penjualan.
 
-Inti teknis aplikasi ada pada **logika algoritma**: perhitungan total belanja, diskon, pajak, dan validasi transaksi. Penyimpanan data memakai **file JSON** (tanpa database) agar sesuai dengan lingkup tugas dan mudah dikerjakan enam orang.
+Inti teknis aplikasi ada pada **logika algoritma**: perhitungan total belanja, diskon, pajak, dan validasi transaksi. Penyimpanan data aplikasi menggunakan **MariaDB**. JSON tetap digunakan sebagai format pertukaran data antara frontend dan backend.
 
 ## 2. Latar Belakang Masalah
 
@@ -56,7 +56,7 @@ LouMart dibuat untuk menjawab masalah tersebut dengan satu aplikasi yang menghit
 
 - Halaman admin: kelola produk dan daftar transaksi
 
-- Penyimpanan data dalam file JSON
+- Penyimpanan data aplikasi dalam database MariaDB
 
 ### 5.2 Di luar lingkup (Out of Scope)
 
@@ -68,7 +68,6 @@ LouMart dibuat untuk menjawab masalah tersebut dengan satu aplikasi yang menghit
 
 - Notifikasi email atau WhatsApp
 
-- Penggunaan database SQL
 
 ## 6. Kebutuhan Fungsional
 
@@ -226,7 +225,7 @@ Pesanan baru hanya disimpan jika tiga pemeriksaan lolos: keranjang tidak kosong,
 
 ## 11. Model Data (dasar ERD)
 
-Tiga entitas utama, disimpan sebagai file JSON: produk.json dan pesanan.json (detail pesanan disimpan di dalam pesanan).
+Tiga entitas utama disimpan dalam database MariaDB: Produk, Pesanan, dan Detail Pesanan.
 
 ### 11.1 Entitas dan atribut
 
@@ -278,7 +277,9 @@ erDiagram
     }
 ```
 
-### 11.3 Contoh format JSON
+### 11.3 Contoh representasi data JSON untuk API
+
+Contoh berikut menunjukkan representasi data yang dapat dipakai dalam komunikasi API, bukan format penyimpanan di database.
 
 Produk:
 
@@ -330,13 +331,13 @@ Agar Frontend 2 dan Backend bisa bekerja paralel, kedua pihak sepakat memakai en
 | /pesanan/{id} | GET | Ambil satu pesanan |
 | /pesanan/{id}/status | PUT | Ubah status pembayaran (admin) |
 
-Catatan: jika dosen hanya mengizinkan JavaScript murni di browser, fungsi di atas diimplementasikan sebagai fungsi JavaScript biasa dan data disimpan di file JSON atau localStorage.
+Request dan response endpoint tetap memakai JSON. Data utama aplikasi disimpan di MariaDB; `localStorage` hanya digunakan untuk keranjang pada browser.
 
 ## 14. Kebutuhan Non-Fungsional
 
 | ID | Kebutuhan |
 |---|---|
-| NFR-01 | **Responsif**: tampilan nyaman di HP dan laptop (Bootstrap) |
+| NFR-01 | **Responsif**: tampilan nyaman di HP dan laptop (Tailwind CSS) |
 | NFR-02 | **Mudah dipakai**: pembeli dapat checkout maksimal dalam 4 langkah |
 | NFR-03 | **Akurat**: perhitungan uang memakai bilangan bulat (rupiah), tanpa selisih pembulatan antara tampilan dan data tersimpan |
 | NFR-04 | **Konsisten**: format rupiah seragam (contoh: Rp599.400) |
@@ -350,18 +351,20 @@ Catatan: jika dosen hanya mengizinkan JavaScript murni di browser, fungsi di ata
 | Project Manager | Jadwal, rapat, laporan progres, koordinasi, pengelolaan repo | Jadwal, notulen, laporan progres |
 | System Analyst | PRD, use case, ERD, flowchart, latar belakang masalah | Dokumen ini, diagram use case, ERD, flowchart |
 | UI/UX Designer | Wireframe dan mockup 6 halaman, palet warna, font, alur navigasi | File desain dan panduan gaya |
-| Frontend 1 | Struktur HTML dan styling Bootstrap sesuai mockup | Halaman statis responsif |
+| Frontend 1 | Struktur HTML dan styling Tailwind sesuai mockup | Halaman statis responsif |
 | Frontend 2 | Interaksi JavaScript, keranjang, fetch/AJAX, olah JSON | Halaman yang terhubung ke data |
-| Backend / Logic | Rumus total, diskon, pajak, validasi, simpan dan baca JSON | Modul logika dan penyimpanan data |
+| Backend / Logic | Rumus total, diskon, pajak, validasi, serta baca dan simpan data MariaDB | Modul logika dan akses database |
 
 ## 16. Jadwal Usulan
 
 | Minggu | Kegiatan |
 |---|---|
-| 1 | PRD final, use case, ERD, wireframe; PM menyiapkan repo; format JSON disepakati |
+| 1 | PRD final, use case, ERD, wireframe; PM menyiapkan repo; skema database dan kontrak API disepakati |
 | 2 | Frontend 1 membangun halaman; Backend membuat fungsi perhitungan dan validasi |
 | 3 | Frontend 2 menyambungkan tampilan ke data; integrasi |
 | 4 | Pengujian, perbaikan bug, laporan akhir, latihan presentasi |
+
+Tim wajib mempresentasikan progres setiap minggu. Pengerjaan boleh selesai lebih awal, tetapi tidak boleh melewati tenggat yang ditentukan dosen.
 
 ## 17. Kriteria Penerimaan dan Skenario Uji
 
@@ -380,7 +383,7 @@ Catatan: jika dosen hanya mengizinkan JavaScript murni di browser, fungsi di ata
 
 | Risiko / Asumsi | Penanganan |
 |---|---|
-| Format JSON berubah di tengah jalan sehingga frontend dan backend tidak cocok | Format dikunci di Minggu 1; perubahan harus disetujui bersama |
+| Struktur database atau kontrak API berubah di tengah jalan sehingga frontend dan backend tidak cocok | Skema database dan kontrak API disepakati bersama; perubahan dikoordinasikan dan didokumentasikan |
 | Anggota terlambat menyelesaikan bagiannya | PM memantau progres tiap pertemuan; Frontend bisa memakai data dummy |
 | Konflik kode karena banyak orang menyunting file yang sama | Satu repo bersama, pembagian file per peran, commit rutin |
 | Asumsi: tidak ada pembayaran sungguhan | Status pembayaran diubah manual oleh admin |
@@ -400,7 +403,9 @@ Catatan: jika dosen hanya mengizinkan JavaScript murni di browser, fungsi di ata
 Keputusan ini melengkapi PRD. Detail lengkap ada di `architecture.md`.
 
 - Backend: **PHP native 8.3.3** (tanpa framework), pola **MVC** + lapisan Service untuk logika bisnis.
-- Penyimpanan: file JSON (`data/produk.json`, `data/pesanan.json`), tanpa database.
+- Penyimpanan: database MariaDB lokal pada komputer setiap anggota. Struktur tabel dan data awal disiapkan dengan sumber yang sama.
 - Endpoint pada bagian 13 diberi awalan `/api` (contoh: `/api/produk`).
 - Perubahan kecil dari PRD yang perlu disepakati tim dicatat di `architecture.md` bagian "Perubahan dari PRD".
-- Ketentuan teknis tugas yang menjadi acuan: HTML untuk struktur halaman; CSS dan Bootstrap untuk tampilan; JavaScript untuk interaksi; AJAX untuk komunikasi data asynchronous; JSON sebagai format pertukaran data. CSS kustom ditulis di file eksternal.
+- Tampilan memakai Tailwind CSS melalui CDN, bukan Bootstrap. Koneksi internet diperlukan untuk memuat CDN.
+- Ketentuan teknis tugas: HTML untuk struktur halaman; Tailwind CSS untuk tampilan; JavaScript untuk interaksi; AJAX untuk komunikasi asynchronous; JSON sebagai format pertukaran data. Data aplikasi disimpan di MariaDB.
+- Setiap anggota menggunakan database lokal sendiri. Kredensial database tidak disimpan di repository.

@@ -25,7 +25,7 @@ Aturan ini wajib diikuti manusia maupun Copilot. Jika harus melanggar, minta per
 
 - Controller **tipis**: baca request, panggil Service/Model, kirim Response.
 - Rumus dan aturan validasi **hanya** di `app/Services/`. Dilarang menduplikasinya di Controller, View, atau JS.
-- Akses file JSON **hanya** lewat `JsonStore` yang dipanggil dari Model.
+- Akses MariaDB hanya melalui Model dengan PDO dan query berparameter. Jangan membuat query dengan menempelkan input pengguna langsung ke SQL.
 - View hanya menampilkan data; tidak ada query atau rumus.
 - Hanya folder `public/` yang boleh diakses browser. `app/`, `config/`, `data/` tidak boleh.
 
@@ -41,15 +41,15 @@ Aturan ini wajib diikuti manusia maupun Copilot. Jika harus melanggar, minta per
 - Bentuk request/response, kode HTTP, dan format error mengikuti `architecture.md` bagian 7. Jangan diubah tanpa persetujuan.
 - Server **tidak memercayai** data dari klien: harga, total, diskon, dan pajak selalu dihitung ulang di server.
 - Setiap input divalidasi di server walau sudah divalidasi di JavaScript.
-- Format JSON di `data/` dikunci. Perubahan struktur harus disetujui bersama (Backend, Frontend 2, System Analyst).
-- Operasi yang mengubah beberapa file (buat pesanan, batalkan pesanan) harus dalam satu kunci `JsonStore`.
-- Jangan menimpa `data/produk.json` dan `data/pesanan.json` yang berisi data uji tim kecuali diminta.
+- JSON digunakan sebagai format request/response API, bukan sebagai penyimpanan utama aplikasi. Perubahan kontrak API tetap harus disetujui bersama.
+- Operasi checkout dan pembatalan yang mengubah beberapa baris harus memakai transaksi database agar perubahan berhasil seluruhnya atau dibatalkan seluruhnya.
+- Setiap anggota memakai database MariaDB lokal dengan skema dan data awal yang sama. Jangan mengunggah kata sandi atau kredensial lokal ke GitHub.
 
 ## 6. Keamanan dasar
 
 - Semua teks dari pengguna yang ditampilkan di View dilewatkan `htmlspecialchars`.
 - Di JavaScript, tampilkan data pengguna dengan `textContent`, bukan `innerHTML`.
-- Tangani `json_decode` yang gagal (balas 400), jangan biarkan error PHP tampil ke pengguna.
+- Tangani `json_decode` request API yang gagal (balas 400), jangan biarkan error PHP tampil ke pengguna.
 - Jangan tampilkan detail error internal di response (balas 500 dengan pesan umum).
 - Nama file gambar produk dibersihkan (huruf, angka, `-`, `_`, `.` saja) dan tidak boleh mengandung `/` atau `..`.
 - Catatan: halaman dan API admin saat ini **tanpa login**. Itu keputusan sementara, bukan praktik yang aman untuk produksi.
@@ -92,13 +92,12 @@ Sebuah task selesai jika:
 - Karena `strict_types` aktif, pastikan tipe data sesuai sebelum memanggil fungsi (mis. `intdiv()` hanya menerima `int`). Data dari klien diperiksa tipenya dulu di `ValidasiService`.
 - Jangan menekan error dengan `@`. Jangan membiarkan `warning` atau `deprecated` muncul di hasil tes.
 
-## 11. CSS dan Bootstrap
+## 11. CSS dan Tailwind
 
 - Struktur memakai HTML5 semantik (`header`, `nav`, `main`, `section`, `footer`, `table`, `form`).
-- Tampilan utama memakai kelas **Bootstrap 5.3.3** (grid, tombol, kartu, form, tabel, badge, modal, alert).
-- Gaya kustom hanya di file eksternal `public/assets/css/style.css`, dimuat **setelah** Bootstrap. Dilarang atribut `style=` inline dan tag `<style>` di View.
-- Warna, font, dan jarak kustom dibuat sebagai variabel CSS di `:root` pada `style.css` (nilai awal ada di `design.md` bagian 2).
-- Nama kelas kustom memakai awalan `lm-` agar tidak bentrok dengan Bootstrap (contoh: `lm-produk-card`, `lm-navbar`).
-- Rancang untuk layar HP dulu (mobile-first); gunakan grid Bootstrap dan `@media (min-width: ...)` bila perlu.
-- Jangan menimpa kelas Bootstrap secara global (mis. `.btn { ... }`). Buat kelas `lm-` sendiri atau gunakan variabel CSS Bootstrap.
+- Tampilan utama memakai utility class **Tailwind CSS melalui CDN**. Jangan memakai Bootstrap.
+- Muat CDN Tailwind pada layout utama. Koneksi internet diperlukan saat halaman dibuka.
+- Dilarang atribut `style=` inline dan tag `<style>` di View. Variabel token dan aturan tambahan yang memang diperlukan ditulis di `public/assets/css/style.css`.
+- Rancang untuk layar HP terlebih dahulu (mobile-first) dan gunakan utility responsif Tailwind sesuai kebutuhan desain.
+- Nama kelas kustom buatan tim memakai awalan `lm-` agar mudah dibedakan dari utility Tailwind.
 - Aset gambar ditaruh di `public/assets/img/`; semua `<img>` punya `alt`.
